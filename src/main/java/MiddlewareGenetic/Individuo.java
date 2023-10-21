@@ -8,6 +8,7 @@ package MiddlewareGenetic;
  *
  * @author FD_gi
  */
+import java.util.ArrayList;
 import org.cloudsimplus.vms.Vm;
 import org.cloudsimplus.cloudlets.Cloudlet;
 /**
@@ -15,24 +16,25 @@ import org.cloudsimplus.cloudlets.Cloudlet;
  * @author FD_gi
  */
 public class Individuo {
-    	private Cloudlet task;
+    	private ArrayList<Cloudlet> cloudletList;
 	private Vm vm;
-	public Individuo(Cloudlet cl, Vm v)
+	public Individuo(ArrayList<Cloudlet> cl, Vm v)
 	{
-		this.task=cl;
+
+		this.cloudletList=cl;
 		this.vm=v;
 	}
-	public Cloudlet getCloudletFromIndividuo()
+	public ArrayList<Cloudlet> getCloudletListFromIndividuo()
 	{
-		return this.task;
+		return this.cloudletList;
 	}
 	public Vm getVmFromaIndividuo()
 	{
 		return this.vm;
 	}
-	public void setCloudletForIndividuo(Cloudlet cl)
+	public void addCloudletForIndividuo(Cloudlet cl)
 	{
-		this.task=cl;
+		this.cloudletList.add(cl);
 	}
 	public void setVmForIndividuo(Vm vm)
 	{
