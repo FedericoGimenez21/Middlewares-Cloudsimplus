@@ -4,40 +4,32 @@
  */
 package MiddlewareGenetic;
 
-/**
- *
- * @author FD_gi
- */
 import java.util.ArrayList;
 import org.cloudsimplus.vms.Vm;
-import org.cloudsimplus.cloudlets.Cloudlet;
+
+
 /**
  *
  * @author FD_gi
  */
-public class Individuo {
-    	private ArrayList<Cloudlet> cloudletList;
-	private Vm vm;
-	public Individuo(ArrayList<Cloudlet> cl, Vm v)
-	{
+public class Individuo{
+	
+	protected ArrayList<Cromosoma> cromosomaList;
 
-		this.cloudletList=cl;
-		this.vm=v;
+	
+	public Individuo(ArrayList<Cromosoma> individuosList){
+		this.cromosomaList=individuosList;		
 	}
-	public ArrayList<Cloudlet> getCloudletListFromIndividuo()
-	{
-		return this.cloudletList;
+	
+	public ArrayList<Cromosoma> getCromosomasList(){
+		return this.cromosomaList;
 	}
-	public Vm getVmFromaIndividuo()
-	{
-		return this.vm;
+	
+	public void updateCromosoma(int index,Vm vm){
+		Cromosoma individuo=this.cromosomaList.get(index);
+		individuo.setVmForCromosoma(vm);
+		this.cromosomaList.set(index, individuo);
 	}
-	public void addCloudletForIndividuo(Cloudlet cl)
-	{
-		this.cloudletList.add(cl);
-	}
-	public void setVmForIndividuo(Vm vm)
-	{
-		this.vm=vm;
-	}
+        
+
 }
