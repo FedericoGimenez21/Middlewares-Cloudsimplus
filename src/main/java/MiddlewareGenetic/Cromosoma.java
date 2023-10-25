@@ -15,28 +15,34 @@ import org.cloudsimplus.cloudlets.Cloudlet;
  *
  * @author FD_gi
  */
-public class Individuo {
+public class Cromosoma {
     	private ArrayList<Cloudlet> cloudletList;
 	private Vm vm;
-	public Individuo(ArrayList<Cloudlet> cl, Vm v)
+	public Cromosoma(ArrayList<Cloudlet> cl, Vm v)
 	{
 
 		this.cloudletList=cl;
 		this.vm=v;
 	}
-	public ArrayList<Cloudlet> getCloudletListFromIndividuo()
+        
+        public Cromosoma(Vm vm){
+            this.vm = vm;
+            this.cloudletList = new ArrayList<Cloudlet>();
+        }
+        
+	public ArrayList<Cloudlet> getCloudletListFromCromosoma()
 	{
 		return this.cloudletList;
 	}
-	public Vm getVmFromaIndividuo()
+	public Vm getVmFromCromosoma()
 	{
 		return this.vm;
 	}
-	public void addCloudletForIndividuo(Cloudlet cl)
+	public void addCloudletForCromosoma(Cloudlet cl)
 	{
 		this.cloudletList.add(cl);
 	}
-	public void setVmForIndividuo(Vm vm)
+	public void setVmForCromosoma(Vm vm)
 	{
 		this.vm=vm;
 	}

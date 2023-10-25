@@ -54,7 +54,7 @@ import org.cloudsimplus.brokers.DatacenterBrokerHeuristic;
  * @author Manoel Campos da Silva Filho
  * @since CloudSim Plus 1.0
  */
-public class TestingBasicScheduller {
+public class TestingBasicScheduler {
     private static final int  HOSTS = 100;
     private static final int  HOST_PES = 32;
     private static final int  HOST_MIPS = 10000; // Milion Instructions per Second (MIPS)
@@ -76,10 +76,10 @@ public class TestingBasicScheduller {
     private Datacenter datacenter0;
 
     public static void main(String[] args) {
-        new TestingBasicScheduller();
+        new TestingBasicScheduler();
     }
 
-    private TestingBasicScheduller() {
+    private TestingBasicScheduler() {
         /*Enables just some level of log messages.
           Make sure to import org.cloudsimplus.util.Log;*/
         //Log.setLevel(ch.qos.logback.classic.Level.WARN);

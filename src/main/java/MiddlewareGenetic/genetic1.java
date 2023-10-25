@@ -20,7 +20,6 @@ import org.cloudsimplus.hosts.HostSimple;
 import org.cloudsimplus.resources.Pe;
 import org.cloudsimplus.resources.PeSimple;
 import org.cloudsimplus.utilizationmodels.UtilizationModelDynamic;
-import org.cloudsimplus.utilizationmodels.UtilizationModelFull;
 import org.cloudsimplus.vms.Vm;
 import org.cloudsimplus.vms.VmSimple;
 
@@ -39,10 +38,6 @@ public class genetic1 {
     private static final int  HOST_RAM = 65_536; //in Megabytes
     private static final long HOST_BW = 10_000; //in Megabits/s
     private static final long HOST_STORAGE = 1_000_000; //in Megabytes
-
-    private static final int CLOUDLETS = 100;
-    private static final int CLOUDLET_PES = 1;
-    private static final int CLOUDLET_LENGTH = 10_000; // Milion Instructions (MI)
     
     private final CloudSimPlus simulation;
     private final DatacenterBroker broker0;
@@ -53,13 +48,15 @@ public class genetic1 {
     public static void main(String[] args) {
         new genetic1();
     }
+    
     public genetic1() {
         simulation = new CloudSimPlus();
         datacenter0 = createDatacenter();
         broker0 = new DatacenterBrokerSimple(simulation);
                 
         int num_cloudlet = 50;
-        int num_vm = 15;
+        int num_vm = 20;
+        int initialPopulationSize = 20;
         
         vmList = createVms(num_vm); // creating n vms
         System.out.println("CANTIDAD DE VMS: "+vmList.size());
@@ -75,61 +72,27 @@ public class genetic1 {
         //Poblacion inicial
         //Se crea un array con Poblaciones. Habran n=num_vm Poblaciones. 
         //Con n=10 habran 10 poblaciones. Cada indice de initialPopulation tiene un array de Individuos
-        ArrayList<Poblacion> initialPopulation = new ArrayList<Poblacion>();
-        
-        if (num_vm>num_cloudlet || num_vm==num_cloudlet){
-            for(int j=0;j<num_vm;j++)
-            {
-
-                    ArrayList<Individuo> firstChromosome = new ArrayList<Individuo>();
-
-                    for(int i=0;i<num_cloudlet;i++)
-                    {
-              
-                            int k = (int)Math.floor(Math.random() * (vmList.size() - 0 + 1) + 0);
-                            ArrayList<Cloudlet> cloudletForInd=new ArrayList<Cloudlet>();
-                            cloudletForInd.add(cloudletList.get(i));
-                            Individuo geneObj = new Individuo(cloudletForInd,vmList.get(k));
-                            firstChromosome.add(geneObj);
-                    }
-                    Poblacion chromosome = new Poblacion(firstChromosome);
-                    initialPopulation.add(chromosome);
+        ArrayList<Individuo> initialPopulation = new ArrayList<Individuo>();
+        for (int i=1; i<initialPopulationSize; i++){
+            ArrayList<Cromosoma> firstIndividuo = new ArrayList<Cromosoma>();
+            
+            for (int j=0; j<num_vm;j++){
+                Cromosoma geneObj = new Cromosoma(vmList.get(j));
+                firstIndividuo.add(geneObj);
             }
-        }
-   
-        else if (num_vm<num_cloudlet){
-            for(int j=0;j<num_vm;j++)
-            {
-                ArrayList<Individuo> firstChromosome = new ArrayList<Individuo>();
-
-                for(int i=0;i<num_vm;i++)
-                {
-                        
-                        int k = (int)Math.floor(Math.random() * (vmList.size()-1 - 0 + 1) + 0);
-                        System.out.println("K:  "+k);
-                        ArrayList<Cloudlet> cloudletForInd=new ArrayList<Cloudlet>();
-                        // cloudletList.remove(i) elimina el elemento y retorna cloudlet del indice
-                        cloudletForInd.add(cloudletList.get(i));
-                        Individuo geneObj = new Individuo(cloudletForInd,vmList.get(k));
-                        firstChromosome.add(geneObj);
-                }
-                for (int x=num_vm;x<num_cloudlet;x++){
-                        int k = (int)Math.floor(Math.random() * (vmList.size()-1 - 0 + 1) + 0);
-                        System.out.println("K:  "+k);
-                        Cloudlet c=cloudletList.get(x);
-                        //System.out.println("K: "+k);
-                        firstChromosome.get(k).addCloudletForIndividuo(c);
-                }
-                
-                
-                Poblacion chromosome = new Poblacion(firstChromosome);
-                initialPopulation.add(chromosome);
+            
+            for (int k=0; k<num_cloudlet; k++){
+                int rndIndex = (int)Math.floor(Math.random() * (vmList.size()-1));
+                firstIndividuo.get(rndIndex).addCloudletForCromosoma(cloudletList.get(k));
             }
+            
+            Individuo individuo = new Individuo(firstIndividuo);
+            initialPopulation.add(individuo);
         }
         
         for (int i=0; i<initialPopulation.size();i++){
             //System.out.println("Poulation: "+initialPopulation.get(i).getIndividuosList().get(i).getCloudletFromIndividuo().getLength());
-            System.out.println("Poulation: "+initialPopulation.get(i).getIndividuosList().size());
+            System.out.println("Poulation: "+initialPopulation.get(i).getCromosomasList().size());
         }
 
 
@@ -146,14 +109,14 @@ public class genetic1 {
 			int index1,index2;
 			index1=random.nextInt(populationSize) % populationSize;
 			index2=random.nextInt(populationSize) % populationSize;
-			ArrayList<Individuo> l1= new ArrayList<Individuo>();
+			ArrayList<Cromosoma> l1= new ArrayList<Cromosoma>();
                         System.out.println("Index1: "+index1);
                         System.out.println("Index2: "+index2);
-			l1=initialPopulation.get(index1).getIndividuosList();
-			Poblacion cromosoma1 = new Poblacion(l1);
-			ArrayList<Individuo> l2= new ArrayList<Individuo>();
-			l2=initialPopulation.get(index2).getIndividuosList();
-			Poblacion cromosoma2 = new Poblacion(l2);
+			l1=initialPopulation.get(index1).getCromosomasList();
+			Individuo cromosoma1 = new Individuo(l1);
+			ArrayList<Cromosoma> l2= new ArrayList<Cromosoma>();
+			l2=initialPopulation.get(index2).getCromosomasList();
+			Individuo cromosoma2 = new Individuo(l2);
 			double rangeMin = 0.0f;
 
                         double rangeMax = 1.0f;
@@ -162,14 +125,14 @@ public class genetic1 {
                         //en caso de que la probabilidad calculada de manera random sea menor a 0.5 se realiza crossover de invdividuos random
                         if(crossProb<0.7)
                         {
-                                int ind=0 + (int)(Math.random() * ((num_vm-1 - 0) + 1));
+                                int ind=0 + (int)(Math.random() * (num_vm-1));
                                 
                                 //el crossover se realiza intercambiando las Vms de un index random
                                 
-                                Vm vm1 = l1.get(ind).getVmFromaIndividuo();
-                                Vm vm2 = l2.get(ind).getVmFromaIndividuo();
-                                cromosoma1.updateIndividuo(ind, vm2);
-                                cromosoma2.updateIndividuo(ind, vm1);
+                                Vm vm1 = l1.get(ind).getVmFromCromosoma();
+                                Vm vm2 = l2.get(ind).getVmFromCromosoma();
+                                cromosoma1.updateCromosoma(ind, vm2);
+                                cromosoma2.updateCromosoma(ind, vm1);
                                 initialPopulation.set(index1, cromosoma1);
                                 initialPopulation.set(index2, cromosoma2);
                                 
@@ -184,19 +147,19 @@ public class genetic1 {
         //se itera sobre las poblaciones buscando la poblacion con mejor fitteest, que se evalua sumando las divisiones entre cloudlet.length y vm.Mips
         for(int i=0;i<initialPopulation.size();i++)
         {
-                ArrayList<Individuo> l= new ArrayList<Individuo>();
-                l=initialPopulation.get(i).getIndividuosList();
+                ArrayList<Cromosoma> l= new ArrayList<Cromosoma>();
+                l=initialPopulation.get(i).getCromosomasList();
                 double sum=0;
                 for(int j=0;j<num_vm;j++)
                 {
-                        Individuo g = l.get(j);
-                        ArrayList<Cloudlet> cloudletsVm = g.getCloudletListFromIndividuo();
+                        Cromosoma g = l.get(j);
+                        ArrayList<Cloudlet> cloudletsVm = g.getCloudletListFromCromosoma();
                         long sumLengthCloudlet=0;
                         for (int x=0;x<cloudletsVm.size();x++){
                             sumLengthCloudlet=sumLengthCloudlet+cloudletsVm.get(x).getLength();
                         }
                        
-                        Vm v = g.getVmFromaIndividuo();
+                        Vm v = g.getVmFromCromosoma();
                         double temp = sumLengthCloudlet/v.getMips();
                         sum+=temp;
                         
@@ -212,17 +175,8 @@ public class genetic1 {
         System.out.println("Fittest: "+fittestIndex);
         
         
-        ArrayList<Individuo> result = new ArrayList<Individuo>();
-        result = initialPopulation.get(fittestIndex).getIndividuosList();
-        /*
-        for (int i=0;i<initialPopulation.size();i++){
-            for (int j=0;j<initialPopulation.get(i).getIndividuosList().size();j++){
-                System.out.println("Initial: "+initialPopulation.get(i).getIndividuosList().get(j).getCloudletFromIndividuo().getLength());
-            }
-            System.out.println(".............");
-            
-        }
-        */
+        ArrayList<Cromosoma> result = new ArrayList<Cromosoma>();
+        result = initialPopulation.get(fittestIndex).getCromosomasList();
         System.out.println("Size de result: "+result.size());
         System.out.println(initialPopulation);
         System.out.println(result);
@@ -236,13 +190,13 @@ public class genetic1 {
         for(int i=0;i<result.size();i++)
         {
             
-                Vm vm=result.get(i).getVmFromaIndividuo();
+                Vm vm=result.get(i).getVmFromCromosoma();
                 finalvmlist.add(vm);
                 
-                System.out.println("Cloudlets lists length: "+result.get(i).getCloudletListFromIndividuo().size());
-                for (int x=0; x<result.get(i).getCloudletListFromIndividuo().size();x++){
+                System.out.println("Cloudlets lists length: "+result.get(i).getCloudletListFromCromosoma().size());
+                for (int x=0; x<result.get(i).getCloudletListFromCromosoma().size();x++){
                     System.out.println("Vm index: "+i);
-                    Cloudlet cloudlet=result.get(i).getCloudletListFromIndividuo().get(x);
+                    Cloudlet cloudlet=result.get(i).getCloudletListFromCromosoma().get(x);
                     cloudlet.setVm(vm);
                     finalcloudletList.add(cloudlet); 
                 }
@@ -267,10 +221,6 @@ public class genetic1 {
 
         final var cloudletFinishedList = broker0.getCloudletFinishedList();
         new CloudletsTableBuilder(cloudletFinishedList).build();
-
-
- 
-       
     }
     
     
@@ -327,26 +277,6 @@ public class genetic1 {
     //20% de numVm son basicas, 40% medias y 40% avanzadas
     private List<Vm> createVms(int num_vm) {
         final var vmList = new ArrayList<Vm>(num_vm);
-        /*
-        for (int i = 0; i < num_vm; i++) {
-            Random rand = new Random();
-            int x = rand.nextInt(3);
-            switch (x) {
-                case 0:
-                    vmList.add(createVmBasic());
-                    break;
-                case 1:
-                    vmList.add(createVmMedium());
-                    break;
-                case 2:
-                    vmList.add(createVmAdvanced());
-                    break;
-                default:
-                    break;
-            }
-            
-        }
-        */
         double porcentajeBasic=num_vm*0.20;
         int numBasic= (int) porcentajeBasic;
         double porcentajeMedium=num_vm*0.40;
