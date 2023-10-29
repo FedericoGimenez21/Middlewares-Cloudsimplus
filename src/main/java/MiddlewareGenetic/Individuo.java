@@ -15,7 +15,19 @@ import org.cloudsimplus.vms.Vm;
 public class Individuo{
 	
 	protected ArrayList<Cromosoma> cromosomaList;
-
+        private double fitness;
+        
+        public void setCromosomas(ArrayList<Cromosoma> newList){
+            this.cromosomaList = newList;
+        }
+        
+        public void setFitness(double newFitness){
+            this.fitness = newFitness;
+        }
+        
+        public double getFitness(){
+            return this.fitness;
+        }
 	
 	public Individuo(ArrayList<Cromosoma> individuosList){
 		this.cromosomaList=individuosList;		
