@@ -4,6 +4,9 @@
  */
 package MiddlewareGenetic;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -11,6 +14,7 @@ import java.util.Comparator;
 import org.cloudsimplus.brokers.DatacenterBroker;
 import org.cloudsimplus.brokers.DatacenterBrokerSimple;
 import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
+import org.cloudsimplus.builders.tables.CsvTable;
 import org.cloudsimplus.cloudlets.Cloudlet;
 import org.cloudsimplus.cloudlets.CloudletSimple;
 import org.cloudsimplus.core.CloudSimPlus;
@@ -29,16 +33,41 @@ import org.cloudsimplus.vms.VmSimple;
  *
  * @author FD_gi
  */
-public class genetic1 {
-    
-    private static final int VM_PES = 4;
-    
+public class GeneticCrossover {
     private static final int  HOSTS = 100;
     private static final int  HOST_PES = 32;
     private static final int  HOST_MIPS = 10000; // Milion Instructions per Second (MIPS)
     private static final int  HOST_RAM = 65_536; //in Megabytes
     private static final long HOST_BW = 10_000; //in Megabits/s
     private static final long HOST_STORAGE = 1_000_000; //in Megabytes
+
+    private static final int VMS = 30;
+    private static final int VM_PES = 4;
+
+    private static final int BASIC_VM_MIPS=1000;
+    private static final int BASIC_VM_RAM=512;
+    private static final int BASIC_VM_BW=1000;
+    private static final int BASIC_VM_SIZE=100;
+    
+    private static final int MEDIUM_VM_MIPS=5000;
+    private static final int MEDIUM_VM_RAM=1024;
+    private static final int MEDIUM_VM_BW=1500;
+    private static final int MEDIUM_VM_SIZE=2000;
+    
+    
+    private static final int ADVANCED_VM_MIPS=10_000;
+    private static final int ADVANCED_VM_RAM=2048;
+    private static final int ADVANCED_VM_BW=2000;
+    private static final int ADVANCED_VM_SIZE=3000;
+    
+    
+    
+    private static final int CLOUDLETS = 50;
+    private static final int CLOUDLET_PES = 1;
+    private static final int CLOUDLET_LENGTH = 100_000; // Milion Instructions (MI)
+    private static final int CLOUDLET_SIZE=1024;            
+    private static final int CLOUDLET_FileSize=1024;         
+    private static final int CLOUDLET_OutputSize=1024;                  
     
     private final CloudSimPlus simulation;
     private final DatacenterBroker broker0;
@@ -47,22 +76,21 @@ public class genetic1 {
     private Datacenter datacenter0;
     
     public static void main(String[] args) {
-        new genetic1();
+        new GeneticCrossover();
     }
     
-    public genetic1() {
+    public GeneticCrossover() {
         simulation = new CloudSimPlus();
         datacenter0 = createDatacenter();
         broker0 = new DatacenterBrokerSimple(simulation);
                 
-        int num_cloudlet = 100;
-        int num_vm = 20;
+
         int initialPopulationSize = 20;
         
-        vmList = createVms(num_vm); // creating n vms
+        vmList = createVms(VMS); // creating n vms
         System.out.println("CANTIDAD DE VMS: "+vmList.size());          
         
-        cloudletList = createCloudlets(num_cloudlet); // creating 40 cloudlets
+        cloudletList = createCloudlets(CLOUDLETS); // creating 40 cloudlets
      
         
         //Poblacion inicial
@@ -72,12 +100,12 @@ public class genetic1 {
         for (int i=0; i<initialPopulationSize; i++){
             ArrayList<Cromosoma> firstIndividuo = new ArrayList<Cromosoma>();
             
-            for (int j=0; j<num_vm;j++){
+            for (int j=0; j<VMS;j++){
                 Cromosoma geneObj = new Cromosoma(vmList.get(j));
                 firstIndividuo.add(geneObj);
             }
             
-            for (int k=0; k<num_cloudlet; k++){
+            for (int k=0; k<CLOUDLETS; k++){
                 int rndIndex = (int)Math.floor(Math.random() * (vmList.size()-1));
                 firstIndividuo.get(rndIndex).addCloudletForCromosoma(cloudletList.get(k));
             }
@@ -86,7 +114,7 @@ public class genetic1 {
             population.add(individuo);
         }
 
-        this.setFitness(population, num_vm);
+        this.setFitness(population, VMS);
         
         int generation=40;
         int populationSize=population.size();
@@ -112,12 +140,12 @@ public class genetic1 {
             //en caso de que la probabilidad calculada de manera random sea menor a 0.5 se realiza crossover de invdividuos random
             if(crossProb<0.7)
             {   
-                int separationIndex = (int) Math.floor(num_vm/2);
+                int separationIndex = (int) Math.floor(VMS/2);
                 
                 ArrayList<Cromosoma> subList1 = new ArrayList<Cromosoma>(l1.subList(0, separationIndex));
-                ArrayList<Cromosoma> subList2 = new ArrayList<Cromosoma>(l2.subList(separationIndex, num_vm));
+                ArrayList<Cromosoma> subList2 = new ArrayList<Cromosoma>(l2.subList(separationIndex, VMS));
                 ArrayList<Cromosoma> subList3 = new ArrayList<Cromosoma>(l2.subList(0, separationIndex));
-                ArrayList<Cromosoma> subList4 = new ArrayList<Cromosoma>(l1.subList(separationIndex, num_vm));
+                ArrayList<Cromosoma> subList4 = new ArrayList<Cromosoma>(l1.subList(separationIndex, VMS));
                 
                 subList1.addAll(subList2);
                 subList3.addAll(subList4);
@@ -127,7 +155,7 @@ public class genetic1 {
                 population.add(hijo2);
                                 
             }
-            this.setFitness(population, num_vm);
+            this.setFitness(population, VMS);
             population = new ArrayList<Individuo>(population.subList(0, 20));
         }
         
@@ -165,7 +193,23 @@ public class genetic1 {
 
 
         final var cloudletFinishedList = broker0.getCloudletFinishedList();
-        new CloudletsTableBuilder(cloudletFinishedList).build();
+
+        
+        final var table = new CloudletsTableBuilder(cloudletFinishedList);
+        table.build();
+        
+        System.out.println("SIZE: "+cloudletFinishedList.size());
+        System.out.println("cloudlet: "+broker0.getCloudletFinishedList().get(cloudletFinishedList.size()-1).getFinishTime());
+        table.getTable();
+        try {
+            CsvTable csv = new CsvTable();
+            LocalTime date = LocalTime.now();
+            
+            csv.setPrintStream(new PrintStream(new java.io.File("results"+date.getHour()+date.getMinute()+date.getSecond() + ".csv")));
+            new CloudletsTableBuilder(broker0.getCloudletFinishedList(), csv).build();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
     }
     
     private void setFitness(ArrayList<Individuo> population, int num_vm){
@@ -226,21 +270,20 @@ public class genetic1 {
     }
     
     private Vm createVmBasic(){
-        final var vm = new VmSimple(1000, VM_PES);
-        vm.setRam(512).setBw(1000).setSize(1000);
+        final var vm = new VmSimple(BASIC_VM_MIPS, VM_PES);
+        vm.setRam(BASIC_VM_RAM).setBw(BASIC_VM_BW).setSize(BASIC_VM_SIZE);
         return vm;
     }
     private Vm createVmMedium(){
-        final var vm = new VmSimple(5000, VM_PES);
-        vm.setRam(1024).setBw(1500).setSize(2000);
+        final var vm = new VmSimple(MEDIUM_VM_MIPS, VM_PES);
+        vm.setRam(MEDIUM_VM_RAM).setBw(MEDIUM_VM_BW).setSize(MEDIUM_VM_SIZE);
         return vm;
     }    
     private Vm createVmAdvanced(){
-        final var vm = new VmSimple(10_000, VM_PES);
-        vm.setRam(2048).setBw(2000).setSize(3000);
+        final var vm = new VmSimple(ADVANCED_VM_MIPS, VM_PES);
+        vm.setRam(ADVANCED_VM_RAM).setBw(ADVANCED_VM_BW).setSize(ADVANCED_VM_SIZE);
         return vm;
     }    
-    
 
     //devuelve una lista con Vms de diferentes categorias
     //20% de numVm son basicas, 40% medias y 40% avanzadas
@@ -267,20 +310,20 @@ public class genetic1 {
 
         return vmList;
     }
+    
     private List<Cloudlet> createCloudlets(int num_cloudlet) {
         final var cloudletList = new ArrayList<Cloudlet>(num_cloudlet);
-        long length = 400_000;
-        int pesNumber = 1;
+
         //UtilizationModel defining the Cloudlets use only 50% of any resource all the time
         //final var utilizationModel =  new UtilizationModelFull();
         final var utilizationModel =  new UtilizationModelDynamic(0.1);
 
         for (int i = 0; i < num_cloudlet; i++) {
             //int x = (int) (Math.random() * ((2000 - 1) + 1)) + 1;
-            final var cloudlet = new CloudletSimple(length, pesNumber, utilizationModel);
-            cloudlet.setSizes(1024);
-            cloudlet.setFileSize(300);
-            cloudlet.setOutputSize(300);
+            final var cloudlet = new CloudletSimple(CLOUDLET_LENGTH, CLOUDLET_PES, utilizationModel);
+            cloudlet.setSizes(CLOUDLET_SIZE);
+            cloudlet.setFileSize(CLOUDLET_FileSize);
+            cloudlet.setOutputSize(CLOUDLET_OutputSize);
             cloudletList.add(cloudlet);
         }
 

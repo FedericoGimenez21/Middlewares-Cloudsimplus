@@ -1,34 +1,17 @@
 /*
- * CloudSim Plus: A modern, highly-extensible and easier-to-use Framework for
- * Modeling and Simulation of Cloud Computing Infrastructures and Services.
- * http://cloudsimplus.org
- *
- *     Copyright (C) 2015-2021 Universidade da Beira Interior (UBI, Portugal) and
- *     the Instituto Federal de Educação Ciência e Tecnologia do Tocantins (IFTO, Brazil).
- *
- *     This file is part of CloudSim Plus.
- *
- *     CloudSim Plus is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
- *
- *     CloudSim Plus is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
- *
- *     You should have received a copy of the GNU General Public License
- *     along with CloudSim Plus. If not, see <http://www.gnu.org/licenses/>.
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package MiddlewareGenetic;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.time.LocalTime;
-import org.cloudsimplus.brokers.DatacenterBroker;
+import java.util.ArrayList;
+import java.util.List;
 import org.cloudsimplus.brokers.DatacenterBrokerSimple;
 import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
+import org.cloudsimplus.builders.tables.CsvTable;
 import org.cloudsimplus.cloudlets.Cloudlet;
 import org.cloudsimplus.cloudlets.CloudletSimple;
 import org.cloudsimplus.core.CloudSimPlus;
@@ -42,23 +25,11 @@ import org.cloudsimplus.utilizationmodels.UtilizationModelDynamic;
 import org.cloudsimplus.vms.Vm;
 import org.cloudsimplus.vms.VmSimple;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.cloudsimplus.brokers.DatacenterBrokerHeuristic;
-import org.cloudsimplus.builders.tables.CsvTable;
-
 /**
- * A minimal but organized, structured and re-usable CloudSim Plus example
- * which shows good coding practices for creating simulation scenarios.
  *
- * <p>It defines a set of constants that enables a developer
- * to change the number of Hosts, VMs and Cloudlets to create
- * and the number of {@link Pe}s for Hosts, VMs and Cloudlets.</p>
- *
- * @author Manoel Campos da Silva Filho
- * @since CloudSim Plus 1.0
+ * @author Fede
  */
-public class TestingBasicScheduler {
+public class RandomScheduler {
     private static final int  HOSTS = 100;
     private static final int  HOST_PES = 32;
     private static final int  HOST_MIPS = 10000; // Milion Instructions per Second (MIPS)
@@ -92,40 +63,47 @@ public class TestingBasicScheduler {
     private static final int CLOUDLET_LENGTH = 800_000; // Milion Instructions (MI)
     private static final int CLOUDLET_SIZE=1024;            
     private static final int CLOUDLET_FileSize=1024;         
-    private static final int CLOUDLET_OutputSize=1024;   
+    private static final int CLOUDLET_OutputSize=1024;        
 
     private final CloudSimPlus simulation;
     private final DatacenterBrokerSimple broker0;
     private List<Vm> vmList;
     private List<Cloudlet> cloudletList;
     private Datacenter datacenter0;
-
+    
+    
     public static void main(String[] args) {
-        new TestingBasicScheduler();
+        new RandomScheduler();
     }
-
-    private TestingBasicScheduler() {
-        /*Enables just some level of log messages.
-          Make sure to import org.cloudsimplus.util.Log;*/
-        //Log.setLevel(ch.qos.logback.classic.Level.WARN);
-
+    private RandomScheduler() {
         simulation = new CloudSimPlus();
         datacenter0 = createDatacenter();
-
-        //Creates a broker that is a software acting on behalf of a cloud customer to manage his/her VMs and Cloudlets
         broker0 = new DatacenterBrokerSimple(simulation);
+                
+        
+        vmList = createVms(VMS); // creating n vms
+        System.out.println("CANTIDAD DE VMS: "+vmList.size());
+        
+        
+        cloudletList = createCloudlets(CLOUDLETS); // creating 40 cloudlets
+        
+        //asignacion de cloudlets en Vms de manera random
+        for (int k=0; k<CLOUDLETS; k++){
+              int rndIndex = (int)Math.floor(Math.random() * (vmList.size()-1));
+              cloudletList.get(k).setVm(vmList.get(rndIndex));
+              System.out.println("Cloudlet: "+k);
+              System.out.println("Vm: "+rndIndex);
 
-        vmList = createVms(VMS);
- 
-        var cloudletList = createCloudlets(CLOUDLETS);
+        }
         broker0.submitVmList(vmList);
         broker0.submitCloudletList(cloudletList);
-
+        
         simulation.start();
         System.out.println(        datacenter0.getHostList());
 
 
         final var cloudletFinishedList = broker0.getCloudletFinishedList();
+        //new CloudletsTableBuilder(cloudletFinishedList).build();
         final var table = new CloudletsTableBuilder(cloudletFinishedList);
         table.build();
         table.getTable();
@@ -138,8 +116,6 @@ public class TestingBasicScheduler {
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
-        
-
     }
 
     /**
@@ -171,21 +147,21 @@ public class TestingBasicScheduler {
         return new HostSimple(HOST_RAM, HOST_BW, HOST_STORAGE, peList);
     }
 
-        private Vm createVmBasic(){
-            final var vm = new VmSimple(BASIC_VM_MIPS, VM_PES);
-            vm.setRam(BASIC_VM_RAM).setBw(BASIC_VM_BW).setSize(BASIC_VM_SIZE);
-            return vm;
-        }
-        private Vm createVmMedium(){
-            final var vm = new VmSimple(MEDIUM_VM_MIPS, VM_PES);
-            vm.setRam(MEDIUM_VM_RAM).setBw(MEDIUM_VM_BW).setSize(MEDIUM_VM_SIZE);
-            return vm;
-        }    
-        private Vm createVmAdvanced(){
-            final var vm = new VmSimple(ADVANCED_VM_MIPS, VM_PES);
-            vm.setRam(ADVANCED_VM_RAM).setBw(ADVANCED_VM_BW).setSize(ADVANCED_VM_SIZE);
-            return vm;
-        }    
+    private Vm createVmBasic(){
+        final var vm = new VmSimple(BASIC_VM_MIPS, VM_PES);
+        vm.setRam(BASIC_VM_RAM).setBw(BASIC_VM_BW).setSize(BASIC_VM_SIZE);
+        return vm;
+    }
+    private Vm createVmMedium(){
+        final var vm = new VmSimple(MEDIUM_VM_MIPS, VM_PES);
+        vm.setRam(MEDIUM_VM_RAM).setBw(MEDIUM_VM_BW).setSize(MEDIUM_VM_SIZE);
+        return vm;
+    }    
+    private Vm createVmAdvanced(){
+        final var vm = new VmSimple(ADVANCED_VM_MIPS, VM_PES);
+        vm.setRam(ADVANCED_VM_RAM).setBw(ADVANCED_VM_BW).setSize(ADVANCED_VM_SIZE);
+        return vm;
+    }    
     
 
     //devuelve una lista con Vms de diferentes categorias
@@ -238,5 +214,4 @@ public class TestingBasicScheduler {
 
         return cloudletList;
     }
-    
 }
