@@ -54,7 +54,7 @@ import org.cloudsimplus.brokers.DatacenterBrokerHeuristic;
  * @author Manoel Campos da Silva Filho
  * @since CloudSim Plus 1.0
  */
-public class TestingBasicScheduller {
+public class TestingBasicScheduler {
     private static final int  HOSTS = 100;
     private static final int  HOST_PES = 32;
     private static final int  HOST_MIPS = 10000; // Milion Instructions per Second (MIPS)
@@ -62,12 +62,10 @@ public class TestingBasicScheduller {
     private static final long HOST_BW = 10_000; //in Megabits/s
     private static final long HOST_STORAGE = 1_000_000; //in Megabytes
 
-    private static final int VMS = 15;
+    private static final int VMS = 20;
     private static final int VM_PES = 4;
 
-    private static final int CLOUDLETS = 50;
-    private static final int CLOUDLET_PES = 1;
-    private static final int CLOUDLET_LENGTH = 400_000; // Milion Instructions (MI)
+    private static final int CLOUDLETS = 100;
 
     private final CloudSimPlus simulation;
     private final DatacenterBrokerSimple broker0;
@@ -76,10 +74,10 @@ public class TestingBasicScheduller {
     private Datacenter datacenter0;
 
     public static void main(String[] args) {
-        new TestingBasicScheduller();
+        new TestingBasicScheduler();
     }
 
-    private TestingBasicScheduller() {
+    private TestingBasicScheduler() {
         /*Enables just some level of log messages.
           Make sure to import org.cloudsimplus.util.Log;*/
         //Log.setLevel(ch.qos.logback.classic.Level.WARN);
@@ -156,26 +154,7 @@ public class TestingBasicScheduller {
     //20% de numVm son basicas, 40% medias y 40% avanzadas
     private List<Vm> createVms(int num_vm) {
         final var vmList = new ArrayList<Vm>(num_vm);
-        /*
-        for (int i = 0; i < num_vm; i++) {
-            Random rand = new Random();
-            int x = rand.nextInt(3);
-            switch (x) {
-                case 0:
-                    vmList.add(createVmBasic());
-                    break;
-                case 1:
-                    vmList.add(createVmMedium());
-                    break;
-                case 2:
-                    vmList.add(createVmAdvanced());
-                    break;
-                default:
-                    break;
-            }
-            
-        }
-        */
+
         double porcentajeBasic=num_vm*0.20;
         int numBasic= (int) porcentajeBasic;
         double porcentajeMedium=num_vm*0.40;
