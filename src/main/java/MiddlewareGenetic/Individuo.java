@@ -5,6 +5,7 @@
 package MiddlewareGenetic;
 
 import java.util.ArrayList;
+import org.cloudsimplus.cloudlets.Cloudlet;
 import org.cloudsimplus.vms.Vm;
 
 
@@ -38,10 +39,20 @@ public class Individuo{
 	}
 	
 	public void updateCromosoma(int index,Vm vm){
-		Cromosoma individuo=this.cromosomaList.get(index);
-		individuo.setVmForCromosoma(vm);
-		this.cromosomaList.set(index, individuo);
+		Cromosoma cromosoma=this.cromosomaList.get(index);
+		cromosoma.setVmForCromosoma(vm);
+		this.cromosomaList.set(index, cromosoma);
 	}
-        
+        public int findCloudlet(Cloudlet cloudlet){
+            int index = -1;
 
+            for (int i = 0; i < this.cromosomaList.size(); i++){
+                if (cromosomaList.get(i).getCloudletListFromCromosoma().contains(cloudlet)){
+                    index = i;
+                    return index;
+                }
+            }
+
+            return index;
+        }
 }

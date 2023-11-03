@@ -41,7 +41,7 @@ public class GeneticCrossover {
     private static final long HOST_BW = 10_000; //in Megabits/s
     private static final long HOST_STORAGE = 1_000_000; //in Megabytes
 
-    private static final int VMS = 30;
+    private static final int VMS = 20;
     private static final int VM_PES = 4;
 
     private static final int BASIC_VM_MIPS=1000;
@@ -62,9 +62,9 @@ public class GeneticCrossover {
     
     
     
-    private static final int CLOUDLETS = 50;
+    private static final int CLOUDLETS = 300;
     private static final int CLOUDLET_PES = 1;
-    private static final int CLOUDLET_LENGTH = 100_000; // Milion Instructions (MI)
+    private static final int CLOUDLET_LENGTH = 400_000; // Milion Instructions (MI)
     private static final int CLOUDLET_SIZE=1024;            
     private static final int CLOUDLET_FileSize=1024;         
     private static final int CLOUDLET_OutputSize=1024;                  
@@ -106,14 +106,14 @@ public class GeneticCrossover {
             }
             
             for (int k=0; k<CLOUDLETS; k++){
-                int rndIndex = (int)Math.floor(Math.random() * (vmList.size()-1));
+                int rndIndex = (int)(Math.random() * (vmList.size()-1));
                 firstIndividuo.get(rndIndex).addCloudletForCromosoma(cloudletList.get(k));
             }
             
             Individuo individuo = new Individuo(firstIndividuo);
             population.add(individuo);
         }
-
+        
         this.setFitness(population, VMS);
         
         int generation=40;
@@ -122,44 +122,77 @@ public class GeneticCrossover {
         // Running the algorithm for 20 generations
         for(int count=0;count<=generation;count++){
                         
-            //se toman dos individuos de manera random
-            int index1,index2;
-            index1=0;
-            index2=1;
-            ArrayList<Cromosoma> l1= new ArrayList<Cromosoma>();
-            l1=population.get(index1).getCromosomasList();
-            Individuo hijo1 = new Individuo(l1);
-            ArrayList<Cromosoma> l2= new ArrayList<Cromosoma>();
-            l2=population.get(index2).getCromosomasList();
-            Individuo hijo2 = new Individuo(l2);
-            double rangeMin = 0.0f;
 
-            double rangeMax = 1.0f;
-            Random r = new Random();
-            double crossProb = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
-            //en caso de que la probabilidad calculada de manera random sea menor a 0.5 se realiza crossover de invdividuos random
-            if(crossProb<0.7)
-            {   
-                int separationIndex = (int) Math.floor(VMS/2);
-                
-                ArrayList<Cromosoma> subList1 = new ArrayList<Cromosoma>(l1.subList(0, separationIndex));
-                ArrayList<Cromosoma> subList2 = new ArrayList<Cromosoma>(l2.subList(separationIndex, VMS));
-                ArrayList<Cromosoma> subList3 = new ArrayList<Cromosoma>(l2.subList(0, separationIndex));
-                ArrayList<Cromosoma> subList4 = new ArrayList<Cromosoma>(l1.subList(separationIndex, VMS));
-                
-                subList1.addAll(subList2);
-                subList3.addAll(subList4);
-                hijo1.setCromosomas(subList1);
-                hijo2.setCromosomas(subList3);
-                population.add(hijo1);
-                population.add(hijo2);
-                                
-            }
+                double rangeMin = 0.0f;
+
+                double rangeMax = 1.0f;
+                Random r = new Random();
+                double crossProb = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
+                //en caso de que la probabilidad calculada de manera random sea menor a 0.7 se realiza crossover de invdividuos random
+                if(crossProb <= 0.7)
+                {   
+                    //se toman las primeras poblaciones que tienen las mejores puntaciones de fitness
+                    int index1,index2;
+                    index1=0;
+                    index2=1;
+ 
+                    // ArrayList<Cromosoma> l1= new ArrayList<Cromosoma>();
+                    //l1=population.get(index1).getCromosomasList();
+                    Individuo hijo1;
+                    //ArrayList<Cromosoma> l2= new ArrayList<Cromosoma>();
+                    //l2=population.get(index2).getCromosomasList();
+                    Individuo hijo2;
+                    
+                    int separationIndex = (int)(CLOUDLETS/2);
+                    int vm_index1;
+                    int vm_index2;
+                    Individuo parent1 = population.get(index1);
+                    Individuo parent2 = population.get(index2);
+
+                    ArrayList<Cromosoma> listHijo1 =  new ArrayList<Cromosoma>();
+                    ArrayList<Cromosoma> listHijo2 =  new ArrayList<Cromosoma>();
+                    for (int j = 0; j < VMS;j++){
+                        Cromosoma geneObj = new Cromosoma(vmList.get(j));
+                        listHijo1.add(geneObj);
+                        listHijo2.add(geneObj);
+                    }
+                    
+                    //se itera hasta la mitad de cloudlets
+                    for(int i = 0; i < separationIndex; i++){
+                      
+                        vm_index1 = parent1.findCloudlet(cloudletList.get(i));
+                        vm_index2 = parent2.findCloudlet(cloudletList.get(i));
+                        
+                        listHijo1.get(vm_index1).addCloudletForCromosoma(cloudletList.get(i));
+                        listHijo2.get(vm_index2).addCloudletForCromosoma(cloudletList.get(i));
+                      
+                    }
+                    //se itera desde la mitad de cloudlets hasta el total
+                    for(int k = separationIndex; k < CLOUDLETS; k++){
+                      
+                        vm_index1 = parent2.findCloudlet(cloudletList.get(k));
+                        vm_index2 = parent1.findCloudlet(cloudletList.get(k));
+                        
+                        listHijo1.get(vm_index1).addCloudletForCromosoma(cloudletList.get(k));
+                        listHijo2.get(vm_index2).addCloudletForCromosoma(cloudletList.get(k));
+                        
+                    }
+
+                    hijo1 = new Individuo(listHijo1);
+                    hijo2 = new Individuo(listHijo2);
+
+                    population.add(hijo1);
+                    population.add(hijo2);     
+                    
+
+                }
+
             this.setFitness(population, VMS);
-            population = new ArrayList<Individuo>(population.subList(0, 20));
+            population = new ArrayList<Individuo>(population.subList(0, populationSize));
+        
         }
         
-        //se itera sobre las poblaciones buscando la poblacion con mejor fitteest, que se evalua sumando las divisiones entre cloudlet.length y vm.Mips    
+        //se toma la mejor poblacion   
         
         ArrayList<Cromosoma> result = new ArrayList<Cromosoma>();
         result = population.get(0).getCromosomasList();
@@ -170,15 +203,20 @@ public class GeneticCrossover {
 
 
         //se toman las cloudlet y vms. Se asigna cada Cloudlet a su respectiva Vm
+        int o = 0;
+        int cantCloudlet=0;
         for(int i=0;i<result.size();i++)
         {            
             Vm vm=result.get(i).getVmFromCromosoma();
             finalvmlist.add(vm);
+            
+            cantCloudlet+=result.get(i).getCloudletListFromCromosoma().size();
                 
             for (int x=0; x<result.get(i).getCloudletListFromCromosoma().size();x++){
                 Cloudlet cloudlet=result.get(i).getCloudletListFromCromosoma().get(x);
                 cloudlet.setVm(vm);
                 finalcloudletList.add(cloudlet); 
+                o = o + 1;
             }
         }
         
@@ -210,6 +248,8 @@ public class GeneticCrossover {
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
+        System.out.println(o);
+        System.out.println(cantCloudlet);
     }
     
     private void setFitness(ArrayList<Individuo> population, int num_vm){
@@ -316,11 +356,13 @@ public class GeneticCrossover {
 
         //UtilizationModel defining the Cloudlets use only 50% of any resource all the time
         //final var utilizationModel =  new UtilizationModelFull();
-        final var utilizationModel =  new UtilizationModelDynamic(0.1);
+        //final var utilizationModel =  new UtilizationModelDynamic(0.1);
 
         for (int i = 0; i < num_cloudlet; i++) {
             //int x = (int) (Math.random() * ((2000 - 1) + 1)) + 1;
-            final var cloudlet = new CloudletSimple(CLOUDLET_LENGTH, CLOUDLET_PES, utilizationModel);
+            //Se desactivo el utilizationModel dado que 
+            //final var cloudlet = new CloudletSimple(CLOUDLET_LENGTH, CLOUDLET_PES, utilizationModel);
+            final var cloudlet = new CloudletSimple(CLOUDLET_LENGTH, CLOUDLET_PES);
             cloudlet.setSizes(CLOUDLET_SIZE);
             cloudlet.setFileSize(CLOUDLET_FileSize);
             cloudlet.setOutputSize(CLOUDLET_OutputSize);

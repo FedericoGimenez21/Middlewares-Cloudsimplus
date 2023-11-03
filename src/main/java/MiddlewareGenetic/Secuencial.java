@@ -29,7 +29,7 @@ import org.cloudsimplus.vms.VmSimple;
  *
  * @author Fede
  */
-public class RandomScheduler {
+public class Secuencial {
     private static final int  HOSTS = 100;
     private static final int  HOST_PES = 32;
     private static final int  HOST_MIPS = 10000; // Milion Instructions per Second (MIPS)
@@ -37,7 +37,7 @@ public class RandomScheduler {
     private static final long HOST_BW = 10_000; //in Megabits/s
     private static final long HOST_STORAGE = 1_000_000; //in Megabytes
 
-    private static final int VMS = 30;
+    private static final int VMS = 1;
     private static final int VM_PES = 4;
 
     private static final int BASIC_VM_MIPS=1000;
@@ -56,14 +56,17 @@ public class RandomScheduler {
     private static final int ADVANCED_VM_BW=2000;
     private static final int ADVANCED_VM_SIZE=3000;
     
+    //0 for BASIC, 1 FOR MEDIUM, 2 FOR ADVANCED
+    private static final int TYPE_OF_VM_USED=0;
     
     
-    private static final int CLOUDLETS = 50;
+    
+    private static final int CLOUDLETS = 300;
     private static final int CLOUDLET_PES = 1;
-    private static final int CLOUDLET_LENGTH = 800_000; // Milion Instructions (MI)
+    private static final int CLOUDLET_LENGTH = 400_000; // Milion Instructions (MI)
     private static final int CLOUDLET_SIZE=1024;            
     private static final int CLOUDLET_FileSize=1024;         
-    private static final int CLOUDLET_OutputSize=1024;        
+    private static final int CLOUDLET_OutputSize=1024;            
 
     private final CloudSimPlus simulation;
     private final DatacenterBrokerSimple broker0;
@@ -73,15 +76,15 @@ public class RandomScheduler {
     
     
     public static void main(String[] args) {
-        new RandomScheduler();
+        new Secuencial();
     }
-    private RandomScheduler() {
+    private Secuencial() {
         simulation = new CloudSimPlus();
         datacenter0 = createDatacenter();
         broker0 = new DatacenterBrokerSimple(simulation);
                 
         
-        vmList = createVms(VMS); // creating n vms
+        vmList = createVms(); // creating n vms
         System.out.println("CANTIDAD DE VMS: "+vmList.size());
         
         
@@ -89,7 +92,7 @@ public class RandomScheduler {
         
         //asignacion de cloudlets en Vms de manera random
         for (int k=0; k<CLOUDLETS; k++){
-              int rndIndex = (int)Math.floor(Math.random() * (vmList.size()-1));
+              int rndIndex = (int)(Math.random() * (vmList.size()-1));
               cloudletList.get(k).setVm(vmList.get(rndIndex));
               System.out.println("Cloudlet: "+k);
               System.out.println("Vm: "+rndIndex);
@@ -116,6 +119,7 @@ public class RandomScheduler {
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
+        System.out.println("CANTIDAD DE CLOUDLET EJECUTADAS: "+cloudletFinishedList.size());
     }
 
     /**
@@ -166,27 +170,22 @@ public class RandomScheduler {
 
     //devuelve una lista con Vms de diferentes categorias
     //20% de numVm son basicas, 40% medias y 40% avanzadas
-    private List<Vm> createVms(int num_vm) {
-        final var vmList = new ArrayList<Vm>(num_vm);
+    private List<Vm> createVms() {
+        final var vmList = new ArrayList<Vm>(VMS);
 
-        double porcentajeBasic=num_vm*0.20;
-        int numBasic= (int) porcentajeBasic;
-        double porcentajeMedium=num_vm*0.40;
-        int numMedium= (int) porcentajeMedium;
-        
-        double porcentajeAdvanced=num_vm*0.40;
-        int numAdvanced= (int) porcentajeAdvanced;
-        
-        for (int i=0;i<numBasic;i++){
-            vmList.add(createVmBasic());
-        }    
-        for (int i=0; i<numMedium;i++){
-            vmList.add(createVmMedium());
+        switch(TYPE_OF_VM_USED){
+            case 0:
+                vmList.add(createVmBasic());
+                break;
+            case 1:
+                vmList.add(createVmMedium());
+                break;
+            case 2:
+                vmList.add(createVmAdvanced());
+                break;
+                
         }
-        for (int i=0; i<numAdvanced;i++){
-            
-            vmList.add(createVmAdvanced());
-        }
+
 
         return vmList;
     }
@@ -205,6 +204,7 @@ public class RandomScheduler {
 
         for (int i = 0; i < num_cloudlet; i++) {
             //int x = (int) (Math.random() * ((2000 - 1) + 1)) + 1;
+            //final var cloudlet = new CloudletSimple(CLOUDLET_LENGTH, CLOUDLET_PES, utilizationModel);
             final var cloudlet = new CloudletSimple(CLOUDLET_LENGTH, CLOUDLET_PES);
             cloudlet.setSizes(CLOUDLET_SIZE);
             cloudlet.setFileSize(CLOUDLET_FileSize);

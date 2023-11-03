@@ -66,7 +66,7 @@ public class TestingBasicScheduler {
     private static final long HOST_BW = 10_000; //in Megabits/s
     private static final long HOST_STORAGE = 1_000_000; //in Megabytes
 
-    private static final int VMS = 30;
+    private static final int VMS = 20;
     private static final int VM_PES = 4;
 
     private static final int BASIC_VM_MIPS=1000;
@@ -87,12 +87,12 @@ public class TestingBasicScheduler {
     
     
     
-    private static final int CLOUDLETS = 50;
+    private static final int CLOUDLETS = 300;
     private static final int CLOUDLET_PES = 1;
-    private static final int CLOUDLET_LENGTH = 800_000; // Milion Instructions (MI)
+    private static final int CLOUDLET_LENGTH = 400_000; // Milion Instructions (MI)
     private static final int CLOUDLET_SIZE=1024;            
     private static final int CLOUDLET_FileSize=1024;         
-    private static final int CLOUDLET_OutputSize=1024;   
+    private static final int CLOUDLET_OutputSize=1024;       
 
     private final CloudSimPlus simulation;
     private final DatacenterBrokerSimple broker0;
@@ -138,6 +138,7 @@ public class TestingBasicScheduler {
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
+        System.out.println("CANTIDAD DE CLOUDLETS EJECUTADAS: "+cloudletFinishedList.size());
         
 
     }
@@ -225,11 +226,13 @@ public class TestingBasicScheduler {
 
         //UtilizationModel defining the Cloudlets use only 50% of any resource all the time
         //final var utilizationModel =  new UtilizationModelFull();
-        final var utilizationModel =  new UtilizationModelDynamic(0.1);
+        //final var utilizationModel =  new UtilizationModelDynamic(0.1);
 
         for (int i = 0; i < num_cloudlet; i++) {
             //int x = (int) (Math.random() * ((2000 - 1) + 1)) + 1;
-            final var cloudlet = new CloudletSimple(CLOUDLET_LENGTH, CLOUDLET_PES, utilizationModel);
+            //final var cloudlet = new CloudletSimple(CLOUDLET_LENGTH, CLOUDLET_PES, utilizationModel);
+            final var cloudlet = new CloudletSimple(CLOUDLET_LENGTH, CLOUDLET_PES);
+
             cloudlet.setSizes(CLOUDLET_SIZE);
             cloudlet.setFileSize(CLOUDLET_FileSize);
             cloudlet.setOutputSize(CLOUDLET_OutputSize);
